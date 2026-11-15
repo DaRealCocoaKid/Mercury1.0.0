@@ -30,6 +30,12 @@ public final class AutoHit {
     private static final int COMBO_RESET_TICKS = 20;
     private static final boolean SHOW_MESSAGE = true;
 
+    /** Alcance maximo para golpear (bloques). Mas corto que el alcance vanilla (3.0) para que el servidor no rechace el golpe. */
+    public static final String[] REACH = {"2.2", "2.4", "2.6", "2.8", "3.0"};
+    public static int reachIdx = 1;
+    private static double lastTx, lastTz;
+    private static Player lastTarget;
+
     private static final class Plan {
         float minStrength = 1.0f;
         int extraDelay = 0;
@@ -67,6 +73,22 @@ public final class AutoHit {
             return;
         }
         lostTicks = 0;
+
+        // Si el objetivo esta en el borde del alcance, el servidor (con ping) rechaza el golpe pero el cliente ya aplico
+        // el frenazo del ataque -> el servidor te corrige la posicion y sientes que te quedas trabado. Solo se golpea dentro de rango seguro.
+        double reach = Double.parseDouble(REACH[Math.floorMod(reachIdx, REACH.length)]);
+        // persiguiendo: si el objetivo se aleja, en el servidor ya esta mas lejos que lo que ves (ping) -> margen extra
+        if (target == lastTarget) {
+            double mx = target.getX() - lastTx, mz = target.getZ() - lastTz;
+            double ax = target.getX() - p.getX(), az = target.getZ() - p.getZ();
+            double len = Math.sqrt(ax * ax + az * az);
+            if (len > 0.01 && (mx * ax + mz * az) / len > 0.03) reach -= 0.3;
+        }
+        lastTarget = target; lastTx = target.getX(); lastTz = target.getZ();
+        if (target.getBoundingBox().distanceToSqr(p.getEyePosition()) > reach * reach) {
+            plan = null;
+            return;
+        }
 
         if (plan == null) plan = newPlan(!hadTarget);
         hadTarget = true;
@@ -115,5 +137,6 @@ public final class AutoHit {
         comboHits = 0;
         lostTicks = 0;
         hadTarget = false;
+        lastTarget = null;
     }
 }

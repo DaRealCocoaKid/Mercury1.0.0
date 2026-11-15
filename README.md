@@ -40,3 +40,11 @@ Todos los efectos se dibujan en el HUD proyectando el mundo a pantalla (como el 
 - **Pestana PvP**: Aim Assist, Auto Totem, Auto Armor, Auto Gapple, Lanzar perla (asignale tecla), Sprint, Fast Place, Mace Combo, Safe Anchor.
 - **Visuals**: Fullbright, Target HUD; Crystal Hitbox y ESP de jugadores ahora usan el mismo render suave (con brillo) que el resto.
 - **Detector cazadores** (Cliente): vigila nombres (pagina Amigos > Cazadores del menu principal; vacia = todos). Avisa si estan en espectador, invisibles o pegados a ti con tu misma rotacion (te espectean). Panel + sonido + ESP/tracer. No ve a quien use vanish de plugin.
+
+## Novedades (v29)
+- **Crystal Hold** (Cliente): con cristal en la mano, mantén click derecho mirando obsidiana/bedrock y coloca + rompe cristales. Delays en ticks (min/max aleatorio, 0 = lo más rápido posible). Tecla propia para activarlo.
+- **Crystal Auto** (Cliente): mirando obsidiana/bedrock con cristales en la hotbar, cambia al cristal, coloca y rompe solo. Ajustes: delays, cambiar al cristal, "Solo con enemigo a N bloques" (0 = siempre) y "No romper si vida <= N" para no matarte con tu propia explosión.
+- **Auto Walk** (PvP): camina solo hacia adelante mientras esté activo (se pausa con cualquier pantalla abierta).
+- **Auto Water Drop** (PvP): si caes (mín. 5 bloques por defecto) y tienes una cubeta de agua en la hotbar, la cambia, mira abajo, tira el agua antes de chocar y (opcional) la recoge y te devuelve el slot y la mirada.
+- **Fix Fast Totem en servers**: ambos modos abren el inventario; se cierra el inventario justo después del click (máx. 1 s), te deja moverte con el inventario abierto (opción "Moverte con inventario") y al cerrarlo vuelve a leer las teclas que mantienes presionadas.
+- **Fix Combat Zylow en servers**: solo golpea dentro de un alcance seguro (2.2 a 3.0, por defecto 2.4) y con margen extra si el objetivo se aleja (ping alto). Antes golpeaba en el borde del alcance vanilla, el servidor rechazaba el golpe y te corregía la posición.

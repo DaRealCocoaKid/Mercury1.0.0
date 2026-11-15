@@ -25,7 +25,7 @@ public final class ModuleManager {
     public static final List<Module> ALL = new ArrayList<>();
 
     // ---- CLIENTE (PvP) ----
-    public static Module AUTO_ANCHOR, AUTO_CRYSTAL, FAST_TOTEM, COMBAT, FREECAM, OPTIMIZER, MACE_COMBO, SAFE_ANCHOR, SPRINT, FAST_PLACE, AIM_ASSIST, AUTO_TOTEM, AUTO_ARMOR, AUTO_GAPPLE, PEARL;
+    public static Module AUTO_ANCHOR, AUTO_CRYSTAL, FAST_TOTEM, COMBAT, FREECAM, OPTIMIZER, MACE_COMBO, SAFE_ANCHOR, SPRINT, FAST_PLACE, AIM_ASSIST, AUTO_TOTEM, AUTO_ARMOR, AUTO_GAPPLE, PEARL, CRYSTAL_HOLD, CRYSTAL_AUTO, AUTOWALK, WATER_DROP;
     // ---- VISUALS ----
     public static Module CRYSTAL_HITBOX, FREELOOK, CHEST_ESP, CHUNK_FINDER, PLAYER_ALERT, INVIS_BOXES;
     public static Module SPEC_WATCH, FULLBRIGHT, TARGET_HUD, XRAY, DEBRIS, BLOCK_AURA, TRAILS, PLAYER_ESP, FOOTSTEPS, AURA, SKYBOX;
@@ -100,6 +100,13 @@ public final class ModuleManager {
                 "Corres siempre al avanzar", -1));
         FAST_PLACE = add(new Module(Module.Cat.PVP, "fastplace", "Fast Place",
                 "Sin espera al colocar bloques/cristales", -1));
+        AUTOWALK = add(new Module(Module.Cat.PVP, "autowalk", "Auto Walk",
+                "Camina solo hacia adelante", -1));
+        WATER_DROP = add(new Module(Module.Cat.PVP, "waterdrop", "Auto Water Drop",
+                "Cayendo con cubeta de agua en la hotbar: water drop solo", -1).with(
+                Setting.integer("Caida minima", () -> MoveTools.minFall, v -> MoveTools.minFall = v, 3, 20, 1, "", true),
+                Setting.bool("Recoger agua", () -> MoveTools.pickUp, v -> MoveTools.pickUp = v, true),
+                Setting.bool("Volver al slot y mira", () -> MoveTools.restore, v -> MoveTools.restore = v, true)));
         FULLBRIGHT = add(new Module(Module.Cat.VISUALS, "fullbright", "Fullbright",
                 "Ves en la oscuridad (vision nocturna local)", -1));
         TARGET_HUD = add(new Module(Module.Cat.VISUALS, "targethud", "Target HUD",
@@ -118,13 +125,30 @@ public final class ModuleManager {
                 "Obsidiana -> cambia al cristal", -1).with(
                 delay("Delay min", () -> Pvp.crystalMin, v -> Pvp.crystalMin = v),
                 delay("Delay max", () -> Pvp.crystalMax, v -> Pvp.crystalMax = v)));
+        CRYSTAL_HOLD = add(new Module(Module.Cat.CLIENTE, "crystalhold", "Crystal Hold",
+                "Manten click derecho con cristal: coloca y rompe rapido", -1).with(
+                Setting.integer("Colocar min", () -> CrystalTools.holdPlaceMin, v -> CrystalTools.holdPlaceMin = v, 0, 6, 1, "t", true),
+                Setting.integer("Colocar max", () -> CrystalTools.holdPlaceMax, v -> CrystalTools.holdPlaceMax = v, 0, 6, 1, "t", true),
+                Setting.integer("Romper min", () -> CrystalTools.holdBreakMin, v -> CrystalTools.holdBreakMin = v, 0, 6, 1, "t", true),
+                Setting.integer("Romper max", () -> CrystalTools.holdBreakMax, v -> CrystalTools.holdBreakMax = v, 0, 6, 1, "t", true)));
+        CRYSTAL_AUTO = add(new Module(Module.Cat.CLIENTE, "crystalauto", "Crystal Auto",
+                "Mirando obsidiana coloca y rompe cristales solo", -1).with(
+                Setting.integer("Colocar min", () -> CrystalTools.autoPlaceMin, v -> CrystalTools.autoPlaceMin = v, 0, 6, 1, "t", true),
+                Setting.integer("Colocar max", () -> CrystalTools.autoPlaceMax, v -> CrystalTools.autoPlaceMax = v, 0, 6, 1, "t", true),
+                Setting.integer("Romper min", () -> CrystalTools.autoBreakMin, v -> CrystalTools.autoBreakMin = v, 0, 6, 1, "t", true),
+                Setting.integer("Romper max", () -> CrystalTools.autoBreakMax, v -> CrystalTools.autoBreakMax = v, 0, 6, 1, "t", true),
+                Setting.bool("Cambiar al cristal", () -> CrystalTools.autoSwitch, v -> CrystalTools.autoSwitch = v, true),
+                Setting.integer("Solo con enemigo a (0=siempre)", () -> CrystalTools.autoEnemyRange, v -> CrystalTools.autoEnemyRange = v, 0, 32, 2, "", true),
+                Setting.integer("No romper si vida <= (0=off)", () -> CrystalTools.autoMinHealth, v -> CrystalTools.autoMinHealth = v, 0, 20, 2, "", true)));
         FAST_TOTEM = add(new Module(Module.Cat.CLIENTE, "fasttotem", "Fast Totem",
                 "Repone el totem al instante al popear", -1).with(
                 Setting.choice("Modo", new String[]{"1 Click", "Full Auto"}, () -> Pvp.totemMode, v -> Pvp.totemMode = v, true),
                 delay("Delay min", () -> Pvp.totemMin, v -> Pvp.totemMin = v),
-                delay("Delay max", () -> Pvp.totemMax, v -> Pvp.totemMax = v)));
+                delay("Delay max", () -> Pvp.totemMax, v -> Pvp.totemMax = v),
+                Setting.bool("Moverte con inventario", () -> Pvp.totemWalk, v -> Pvp.totemWalk = v, true)));
         COMBAT = add(new Module(Module.Cat.CLIENTE, "combat", "Combat Zylow",
-                "Golpea solo con el crosshair sobre un jugador", GLFW.GLFW_KEY_G));
+                "Golpea solo con el crosshair sobre un jugador", GLFW.GLFW_KEY_G).with(
+                Setting.choice("Alcance max", AutoHit.REACH, () -> AutoHit.reachIdx, v -> AutoHit.reachIdx = v, true)));
         FREECAM = add(new Module(Module.Cat.CLIENTE, "freecam", "Freecam",
                 "Camara libre", GLFW.GLFW_KEY_V, () -> Freecam.active, v -> Freecam.toggle(Minecraft.getInstance())).with(
                 Setting.decimal("Velocidad", () -> c().freecamSpeed, v -> c().freecamSpeed = (float) v, 0.5, 10, 0.5, v -> String.format("%.1f", v))));
@@ -283,6 +307,8 @@ public final class ModuleManager {
         MaceCombo.tick();
         SafeAnchor.tick();
         PvpTools.tick();
+        CrystalTools.tick();
+        MoveTools.tick();
         Fx.tick(mc);
         boolean free = mc.player != null && mc.gui.screen() == null;
         Freelook.tick(mc, free && FREELOOK.key > 0

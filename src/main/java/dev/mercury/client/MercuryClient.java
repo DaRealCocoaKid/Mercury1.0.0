@@ -43,6 +43,7 @@ public class MercuryClient implements ClientModInitializer {
         });
 
         ClientTickEvents.START_CLIENT_TICK.register(Freecam::startTick);
+        ClientTickEvents.START_CLIENT_TICK.register(dev.mercury.client.module.MoveTools::startTick);
 
         ClientTickEvents.END_CLIENT_TICK.register(mc -> {
             ModuleManager.tick(mc);

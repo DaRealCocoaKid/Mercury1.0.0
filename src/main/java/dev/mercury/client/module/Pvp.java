@@ -28,6 +28,7 @@ public final class Pvp {
     // delays en ticks (1 tick = 50ms)
     public static int anchorMin = 1, anchorMax = 3, crystalMin = 1, crystalMax = 3, totemMin = 1, totemMax = 3;
     public static int totemMode = 0; // 0 = 1 click, 1 = full auto
+    public static boolean totemWalk = true; // poder moverte mientras el inventario del 1 Click esta abierto
     public static int hitboxColor = 0;
 
     private static int tick;
@@ -35,7 +36,9 @@ public final class Pvp {
     private static int pendingSlot = -1, pendingAt;
     // Fast Totem
     private static boolean prevOffTotem, armed;
-    private static int popOpenAt = -1, armedAt, hoverAt = -1, autoAt = -1;
+    private static int popOpenAt = -1, armedAt, hoverAt = -1, autoAt = -1, closeAt = -1;
+    private static java.lang.reflect.Method setAllKeys;
+    private static boolean setAllLooked;
 
     static int rand(int a, int b) {
         if (b < a) b = a;
@@ -120,28 +123,59 @@ public final class Pvp {
 
         if (popOpenAt >= 0 && tick >= popOpenAt) {
             popOpenAt = -1;
-            if (mc.gui.screen() == null && findTotem(p) >= 0) {
+            int ts = findTotem(p);
+            if (mc.gui.screen() == null && ts >= 0) {
+                // en los dos modos se abre el inventario (como un jugador normal)
                 mc.gui.setScreen(new InventoryScreen(p));
                 armed = true;
                 armedAt = tick;
                 hoverAt = tick + 1;
                 autoAt = totemMode == 1 ? tick + rand(totemMin, totemMax) : -1;
+                closeAt = -1;
             }
         }
 
         if (!armed) return;
-        if (!(mc.gui.screen() instanceof InventoryScreen) || tick - armedAt > 60) { disarm(); return; }
-        if (off) { mc.gui.setScreen(null); disarm(); return; } // totem ya en mano -> cierra solo
+        if (!(mc.gui.screen() instanceof InventoryScreen) || tick - armedAt > 20) {
+            boolean ours = mc.gui.screen() instanceof InventoryScreen;
+            if (ours) mc.gui.setScreen(null);
+            disarm();
+            resyncKeys();
+            return;
+        }
+        if (off || (closeAt >= 0 && tick >= closeAt)) { // totem ya en mano (o ya hiciste el click) -> cierra solo
+            mc.gui.setScreen(null);
+            disarm();
+            resyncKeys();
+            return;
+        }
 
+        if (totemWalk) resyncKeys(); // mientras esta abierto sigues moviendote con las teclas que tienes presionadas
         if (totemMode == 0 && hoverAt >= 0 && tick >= hoverAt) { hoverAt = -1; hover(p); }
-        if (totemMode == 1 && autoAt >= 0 && tick >= autoAt) { autoAt = -1; swap(p, findTotem(p)); }
+        if (totemMode == 1 && autoAt >= 0 && tick >= autoAt) {
+            autoAt = -1;
+            swap(p, findTotem(p));
+            closeAt = tick + 1; // cierra enseguida, sin esperar la confirmacion del servidor (ping)
+        }
     }
 
-    private static void disarm() { armed = false; hoverAt = -1; autoAt = -1; }
+    private static void disarm() { armed = false; hoverAt = -1; autoAt = -1; closeAt = -1; }
+
+    /** Vuelve a leer del teclado las teclas que sigues presionando (al abrir/cerrar una pantalla el juego las suelta). */
+    private static void resyncKeys() {
+        try {
+            if (!setAllLooked) {
+                setAllLooked = true;
+                for (java.lang.reflect.Method m : Class.forName("net.minecraft.client.KeyMapping").getMethods())
+                    if (m.getName().equals("setAll") && m.getParameterCount() == 0) { setAllKeys = m; break; }
+            }
+            if (setAllKeys != null) setAllKeys.invoke(null);
+        } catch (Throwable ignored) { setAllKeys = null; }
+    }
 
     private static void swap(LocalPlayer p, int slotId) {
         if (slotId < 0 || mc.gameMode == null) return;
-        mc.gameMode.handleContainerInput(p.containerMenu.containerId, slotId, 40, ContainerInput.SWAP, p);
+        mc.gameMode.handleContainerInput(p.inventoryMenu.containerId, slotId, 40, ContainerInput.SWAP, p);
     }
 
     // posiciona el mouse encima de un totem
@@ -166,6 +200,7 @@ public final class Pvp {
         if (!armed || totemMode != 0 || p == null || slot == null || button != 0) return false;
         if (!slot.getItem().is(Items.TOTEM_OF_UNDYING) || slot.index < 9 || slot.index > 44) return false;
         swap(p, slot.index);
+        closeAt = tick + 1; // cierra el inventario enseguida, sin esperar la confirmacion del servidor
         return true;
     }
 }
