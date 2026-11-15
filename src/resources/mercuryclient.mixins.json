@@ -1,0 +1,7 @@
+{
+  "required": true,
+  "package": "dev.mercury.client.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": ["ContainerScreenAccessor", "ContainerScreenMixin", "MouseHandlerAccessor", "ScreenMixin", "FreelookCameraMixin", "FreelookTurnMixin"],
+  "injectors": { "defaultRequire": 1 }
+}

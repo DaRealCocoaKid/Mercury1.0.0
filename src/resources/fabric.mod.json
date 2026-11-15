@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "mercuryclient",
+  "version": "${version}",
+  "name": "Mercury Client",
+  "description": "Mercury Client: PvP (Auto Anchor, Auto Crystal, Fast Totem, Combat) + Visuals (ESP, Chunk Finder, avisos) con menu limpio.",
+  "authors": ["Mercury", "zylow"],
+  "license": "All-Rights-Reserved",
+  "icon": "assets/visionplus/icon.png",
+  "environment": "client",
+  "entrypoints": { "client": ["dev.mercury.client.MercuryClient"] },
+  "mixins": [
+    { "config": "mercuryclient.mixins.json", "environment": "client" },
+    { "config": "visionplus.client.mixins.json", "environment": "client" }
+  ],
+  "depends": {
+    "fabricloader": ">=0.19.1",
+    "minecraft": ">=26.2-",
+    "java": ">=25",
+    "fabric-api": "*"
+  }
+}
